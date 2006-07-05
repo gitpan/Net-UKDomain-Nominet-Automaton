@@ -67,7 +67,8 @@ our @ukfields = ('for', 'reg-contact', 'reg-trad-name', 'reg-type', 'reg-co-no',
                  'reg-phone', 'reg-fax', 'reg-email', 'admin-c', 'a-phone', 'a-fax', 
                  'a-email', 'a-addr', , 'billing-c', 'b-phone', 'b-fax', 'b-email',
 		 'b-addr', 'ips-key', 'first-bill', 'recur-bill', 'auto-bill', 
-		 'next-bill', 'notes');
+		 'next-bill', 'notes', 'dns0', 'dns1', 'dns2', 'dns3', 'dns4',
+		 'dns5', 'dns6', 'dns7', 'dns8', 'dns9');
 
 our $regtypes = "(ltd|plc|ptnr|stra|llp|ip|ind|sch|rchar|gov|crc|stat|other|find|fcorp|fother)";
 our $emailfields = "(reg-email|a-email|b-email)";
@@ -78,7 +79,7 @@ our @ISA = qw(Exporter);
 # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
 our @EXPORT = qw();
-our $VERSION = '1.00';
+our $VERSION = '1.01';
 
 # Preloaded methods go here.
 

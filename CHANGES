@@ -1,0 +1,7 @@
+Revision history for Perl module Net::UKDomain::Nominet::Automaton
+
+1.01	5th July 2006
+	- fix: name servers were not registered with domain
+
+1.00	23 June 2006
+	- Initial Release
