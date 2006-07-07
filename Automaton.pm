@@ -79,7 +79,7 @@ our @ISA = qw(Exporter);
 # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
 our @EXPORT = qw();
-our $VERSION = '1.01';
+our $VERSION = '1.02';
 
 # Preloaded methods go here.
 
@@ -428,7 +428,7 @@ sub modify {
 			}
 
 		if ( $field =~ m/$emailfields/i && ! check_email($fdata) ) {
-			$errstr "$field is not a valid email address";
+			$errstr = "$field is not a valid email address";
 			return;
 			}
 
@@ -436,8 +436,9 @@ sub modify {
 		}
 	
 
+	my $to = undef;
 	if ( $domain =~ /.*\.(.*)\.uk/i ) {
-		my $to = 'auto-' . $1 . '@nic.uk';
+		$to = 'auto-' . $1 . '@nic.uk';
 		}
 
 	my $data = "operation: modify\nkey: $domain\n";
@@ -451,7 +452,6 @@ sub modify {
 		}
 	
 	if ( ! &send_mail($to, $self{tag} ." Modify", $signature) ) {
-		$errstr = "Unable to send email request - reason unknown"
 		return;
 		}
 	return 1;
@@ -465,23 +465,27 @@ sub release {
 	my $domain = shift;
 	my $tag = shift;
     
-	return if ! $domain || ! $tag;
+	$errstr = "Domain or TAG not passed", return if ! $domain || ! $tag;
 	return if ! $self->valid_domain($domain);
 
 	$tag = uc $tag;
 
 	# Check that the TAG exists
 	use LWP::UserAgent;
-	my $ua = LWP::UserAgent->new(timeout => 10);
-	my $req = HTTP::Request->new(GET => 'http://www.nominet.org.uk/tag/becometagholder/taglist/');
-	my $response = $ua->request($req)->as_string;
-	if ( response !~ /$tag/ )
-		$errstr = "IPS TAG Not Known - cannot release domain";
+	my $ua = LWP::UserAgent->new(timeout => 20);
+
+	my $response = $ua->get('http://www.nominet.org.uk/tag/becometagholder/taglist/');
+	if ( $response->is_success ) {
+		$errstr = "$tag is unknown", return if ! $response->content =~ /$tag/im;
+		}
+	else {
+		$errstr = $response->status_line;
 		return;
 		}
 
+	my $to = undef;
 	if ( $domain =~ /.*\.(.*)\.uk/i ) {
-		my $to = 'auto-' . $1 . '@nic.uk';
+		$to = 'auto-' . $1 . '@nic.uk';
 		}
 
 	my $data = "operation: release\nkey: $domain\nips-key: $tag";
@@ -494,7 +498,6 @@ sub release {
 		}
 	
 	if ( ! &send_mail($to, $self{tag} . " Release", $signature) ) {
-		$errstr = "Unable to send email request - reason unknown"
 		return;
 		}
 	return 1;
@@ -508,8 +511,9 @@ sub renew {
 	return if ! $domain;
 	return if ! $self->valid_domain($domain);
 
+	my $to = undef;
 	if ( $domain =~ /.*\.(.*)\.uk/i ) {
-		my $to = 'auto-' . $1 . '@nic.uk';
+		$to = 'auto-' . $1 . '@nic.uk';
 		}
 
 	my $data = "operation: renew\nkey: $domain";
@@ -522,7 +526,7 @@ sub renew {
 		}
 	
 	if ( ! &send_mail($to, $self{tag} . " Renew", $signature) ) {
-		$errstr = "Unable to send email request - reason unknown"
+		$errstr = "Unable to send email request - reason unknown";
 		return;
 		}
 	return 1;
@@ -535,8 +539,9 @@ sub delete {
 	return if ! $domain;
 	return if ! $self->valid_domain($domain);
 
+	my $to = undef;
 	if ( $domain =~ /.*\.(.*)\.uk/i ) {
-		my $to = 'auto-' . $1 . '@nic.uk';
+		$to = 'auto-' . $1 . '@nic.uk';
 		}
 
 	my $data = "operation: delete\nkey: $domain";
@@ -549,7 +554,7 @@ sub delete {
 		}
 	
 	if ( ! &send_mail($to, $self{tag} ." Delete", $signature) ) {
-		$errstr = "Unable to send email request - reason unknown"
+		$errstr = "Unable to send email request - reason unknown";
 		return;
 		}
 	return 1;
@@ -562,8 +567,9 @@ sub query {
 	return if ! $domain;
 	return if ! $self->valid_domain($domain);
 
+	my $to = undef;
 	if ( $domain =~ /.*\.(.*)\.uk/i ) {
-		my $to = 'auto-' . $1 . '@nic.uk';
+		$to = 'auto-' . $1 . '@nic.uk';
 		}
 
 	my $data = "operation: query\nkey: $domain";
@@ -576,7 +582,7 @@ sub query {
 		}
 	
 	if ( ! &send_mail($to, $self{tag} . " Query", $signature) ) {
-		$errstr = "Unable to send email request - reason unknown"
+		$errstr = "Unable to send email request - reason unknown";
 		return;
 		}
 	return 1;
@@ -673,8 +679,21 @@ sub send_mail {
 	my $recipient = shift;
 	my $subject = shift;
 	my $message = shift;
-    
-	return if ! $recipient || ! $message || ! $subject;
+
+	if ( ! $recipient ) {
+		$errstr = "No recipient passed";
+		return;
+		}
+
+	if ( ! $subject ) {
+		$errstr = "No Subject passed";
+		return;
+		}
+
+	if ( ! $message ) {
+		$errstr = "No message passed";
+		return;
+		}
     
 	if ( defined $self{testemail} ) {
 		$recipient = $self{testemail};

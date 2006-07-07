@@ -6,7 +6,8 @@
 # change 'tests => 1' to 'tests => last_test_to_print';
 
 use Test;
-BEGIN { plan tests => 8 };
+my $d = undef;
+BEGIN { plan tests => 12, onfail => sub { print $d->errstr(); } };
 use Net::UKDomain::Nominet::Automaton;
 ok(1); # If we made it this far, we're ok.
 
@@ -48,7 +49,7 @@ $secret = undef;
 $public = undef;
 $pgp = undef;
 
-my $d = Net::UKDomain::Nominet::Automaton->new( keyid     => $keyID,
+$d = Net::UKDomain::Nominet::Automaton->new( keyid     => $keyID,
                                         passphrase      => 'TestOpenPGP',
                                         tag             => 'IPSTAG',
                                         smtpserver      => 'smtp.example.com',
@@ -56,7 +57,7 @@ my $d = Net::UKDomain::Nominet::Automaton->new( keyid     => $keyID,
                                         secring         => './.pgp/secret.pgp',
                                         pubring         => './.pgp/public.pgp',
                                         compat          => 'PGP2',
-                                        testemail       => 'autotest'
+                                        testemail       => 'testemail'
                                         ); 
 
 ok($d);
@@ -79,4 +80,31 @@ my $details = { 'for' 		=> 'Test Registrant',
 		};
 
 ok( $d->register($domain, $details) );
+
+$domain = 'nominet.org.uk';
+my $details = { 'reg-contact'	=> 'Test Contact',
+		'reg-addr'	=> '1 High Street',
+		'reg-city'	=> 'A Town',
+		'reg-county'	=> 'County',
+		'reg-postcode'	=> 'AN0 0NA',
+		'reg-country'	=> 'GB',
+		'reg-email'	=> 'test@example.com'
+		};
+
+if ( ! $d->modify($domain, $details) ) {
+	print "Cannot modify $domain " . $d->errstr() . "\n";
+	}
+else { ok(1); }
+if ( ! $d->renew($domain) ) {
+	print "Cannot renew $domain " . $d->errstr() . "\n";
+	}
+else { ok(1); }
+if ( ! $d->release($domain, "GEEKY") ) { 
+	print "Cannot release $domain " . $d->errstr() . "\n";
+	}
+else { ok(1); }
+if ( ! $d->delete($domain) ) { 
+	print "Cannot release $domain " . $d->errstr() . "\n";
+	}
+else { ok(1); }
 

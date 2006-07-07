@@ -1,5 +1,8 @@
 Revision history for Perl module Net::UKDomain::Nominet::Automaton
 
+1.02	7 July 2006
+	- fix renew, release, delete query and modify subs
+
 1.01	5th July 2006
 	- fix: name servers were not registered with domain
 
