@@ -21,12 +21,14 @@ our %ukrules = (
                'reg-co-no'	=> '[0-9]{1,10}',
                'reg-addr'	=> '[[:print:]]{1,256}',
                'reg-city'	=> '[[:print:]]{1,80}',
+	       'reg-locality'	=> '[[:print:]]{1,80}',
                'reg-county'	=> '[[:print:]]{1,80}',
                'reg-postcode'	=> '[A-Z0-9 ]{1,10}',
                'reg-country'	=> '[A-Z]{2}',
                'reg-fax'	=> '[\+0-9][0-9\.\-]{1,20}',
                'reg-phone'	=> '[\+0-9][0-9\.\-]{1,20}',
                'reg-email'	=> '.*',
+	       'reg-reg'	=> '.*',
                'dns0'		=> '[a-z0-9][a-z0-9\-\.\,]+',
                'dns1'		=> '[a-z0-9][a-z0-9\-\.\,]+',
                'dns2'		=> '[a-z0-9][a-z0-9\-\.\,]+',
@@ -44,6 +46,11 @@ our %ukrules = (
                'a-email'	=> '.*',
                'billing-c'	=> '[[:print:]]{1,80}',
                'b-addr'		=> '[[:print:]]{1,256}',
+	       'b-locality'	=> '[[:print:]]{1,80}',
+	       'b-city'		=> '[[:print:]]{1,80}',
+	       'b-county'	=> '[[:print:]]{1,80}',
+	       'b-postcode'	=> '[A-Z0-9 ]{1,10}',
+	       'b-country'	=> '[A-Z]{2}',
                'b-phone'	=> '[\+0-9][0-9\.\-]{1,20}',
                'b-fax'		=> '[\+0-9][0-9\.\-]{1,20}',
                'b-email'	=> '.*',
@@ -79,7 +86,7 @@ our @ISA = qw(Exporter);
 # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
 our @EXPORT = qw();
-our $VERSION = '1.02';
+our $VERSION = '1.03';
 
 # Preloaded methods go here.
 

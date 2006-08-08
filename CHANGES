@@ -1,5 +1,8 @@
 Revision history for Perl module Net::UKDomain::Nominet::Automaton
 
+1.03	8 August 2006
+	- added fields as per today's Nominet announcement
+
 1.02	7 July 2006
 	- fix renew, release, delete query and modify subs
 
