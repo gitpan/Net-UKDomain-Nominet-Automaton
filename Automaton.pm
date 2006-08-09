@@ -28,7 +28,7 @@ our %ukrules = (
                'reg-fax'	=> '[\+0-9][0-9\.\-]{1,20}',
                'reg-phone'	=> '[\+0-9][0-9\.\-]{1,20}',
                'reg-email'	=> '.*',
-	       'reg-reg'	=> '.*',
+	       'reg-ref'	=> '.*',
                'dns0'		=> '[a-z0-9][a-z0-9\-\.\,]+',
                'dns1'		=> '[a-z0-9][a-z0-9\-\.\,]+',
                'dns2'		=> '[a-z0-9][a-z0-9\-\.\,]+',
@@ -69,11 +69,12 @@ our %ukmandatory = (
                    'reg-country' => 1,
                    );
                    
-our @ukfields = ('for', 'reg-contact', 'reg-trad-name', 'reg-type', 'reg-co-no',
+our @ukfields = ('for', 'reg-contact', 'reg-trad-name', 'reg-type', 'reg-co-no', 'reg-locality',
                  'reg-addr', 'reg-city', 'reg-county', 'reg-country', 'reg-postcode',
-                 'reg-phone', 'reg-fax', 'reg-email', 'admin-c', 'a-phone', 'a-fax', 
-                 'a-email', 'a-addr', , 'billing-c', 'b-phone', 'b-fax', 'b-email',
-		 'b-addr', 'ips-key', 'first-bill', 'recur-bill', 'auto-bill', 
+                 'reg-phone', 'reg-fax', 'reg-email', 'reg-ref', 'admin-c', 'a-phone', 
+		 'a-fax', 'a-email', 'a-addr', , 'billing-c', 'b-phone', 'b-fax', 
+		 'b-email', 'b-addr', 'b-locality', 'b-city', 'b-county', 'b-postcode', 
+		 'b-country', 'b-addr', 'ips-key', 'first-bill', 'recur-bill', 'auto-bill', 
 		 'next-bill', 'notes', 'dns0', 'dns1', 'dns2', 'dns3', 'dns4',
 		 'dns5', 'dns6', 'dns7', 'dns8', 'dns9');
 
@@ -86,7 +87,7 @@ our @ISA = qw(Exporter);
 # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
 our @EXPORT = qw();
-our $VERSION = '1.03';
+our $VERSION = '1.04';
 
 # Preloaded methods go here.
 
