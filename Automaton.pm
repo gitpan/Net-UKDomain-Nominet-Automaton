@@ -13,73 +13,128 @@ $Mail::CheckUser::Skip_Network_Checks = 1;
 our $errstr = undef;	# Global error string for returning error condition details
 
 our %ukrules = (
-               'for' 		=> '[[:print:]]{1,80}',
-               'reg-contact'	=> '[[:print:]]{1,80}',
-               'reg-trad-name'	=> '[[:print:]]{1,80}',
-               'reg-type'	=> '(LTD|PLC|PTNR|LLP|STRA|IND|IP|SCH|RCHAR|GOV|CRC|STAT|OTHER|FIND|FCORP|FOTHER)',
-	       'reg-opt-out'	=> '(y|n)',
-               'reg-co-no'	=> '[0-9]{1,10}',
-               'reg-addr'	=> '[[:print:]]{1,256}',
-               'reg-city'	=> '[[:print:]]{1,80}',
-	       'reg-locality'	=> '[[:print:]]{1,80}',
-               'reg-county'	=> '[[:print:]]{1,80}',
-               'reg-postcode'	=> '[A-Z0-9 ]{1,10}',
-               'reg-country'	=> '[A-Z]{2}',
-               'reg-fax'	=> '[\+0-9][0-9\.\-]{1,20}',
-               'reg-phone'	=> '[\+0-9][0-9\.\-]{1,20}',
-               'reg-email'	=> '.*',
-	       'reg-ref'	=> '.*',
-               'dns0'		=> '[a-z0-9][a-z0-9\-\.\, ]+',
-               'dns1'		=> '[a-z0-9][a-z0-9\-\.\, ]+',
-               'dns2'		=> '[a-z0-9][a-z0-9\-\.\, ]+',
-               'dns3'		=> '[a-z0-9][a-z0-9\-\.\, ]+',
-               'dns4'		=> '[a-z0-9][a-z0-9\-\.\, ]+',
-               'dns5'		=> '[a-z0-9][a-z0-9\-\.\, ]+',
-               'dns6'		=> '[a-z0-9][a-z0-9\-\.\, ]+',
-               'dns7'		=> '[a-z0-9][a-z0-9\-\.\, ]+',
-               'dns8'		=> '[a-z0-9][a-z0-9\-\.\, ]+',
-               'dns9'		=> '[a-z0-9][a-z0-9\-\.\, ]+',
-               'admin-c'	=> '[[:print:]]{1,80}',
-               'a-addr'		=> '[[:print:]]{1,256}',
-               'a-phone'	=> '[\+0-9][0-9\.\-]{1,20}',
-               'a-fax'		=> '[\+0-9][0-9\.\-]{1,20}',
-               'a-email'	=> '.*',
-               'billing-c'	=> '[[:print:]]{1,80}',
-               'b-addr'		=> '[[:print:]]{1,256}',
-	       'b-locality'	=> '[[:print:]]{1,80}',
-	       'b-city'		=> '[[:print:]]{1,80}',
-	       'b-county'	=> '[[:print:]]{1,80}',
-	       'b-postcode'	=> '[A-Z0-9 ]{1,10}',
-	       'b-country'	=> '[A-Z]{2}',
-               'b-phone'	=> '[\+0-9][0-9\.\-]{1,20}',
-               'b-fax'		=> '[\+0-9][0-9\.\-]{1,20}',
-               'b-email'	=> '.*',
-               'ips-key'	=> '[A-Z0-9\-]+',
-               'first-bill'	=> '(th|bc)',
-               'recur-bill'	=> '(th|bc)',
-               'auto-bill'	=> '[0-9]{0,3}',
-               'next-bill'	=> '[0-9]{0,3}',
-               'notes'		=> '[[:print:]]*',
-               );
+		'for' 		=> '[[:print:]]{1,80}', 	# Deprecated and to be removed soon
+		'account-name'	=> '[[:print:]]{1,80}',
+		'account-id'	=> '[[:print:]]{1,80}',
+		'contact-id'	=> '[[:print:]]{1,80}',
+		'name'		=> '[[:print:]]{1,80}',
+		'reg-contact'	=> '[[:print:]]{1,80}',		# Deprecated and to be removed soon
+		'reg-trad-name'	=> '[[:print:]]{1,80}',		# Deprecated and to be removed soon
+		'trad-name:'	=> '[[:print:]]{1,80}',
+		'reg-type'	=> '(LTD|PLC|PTNR|LLP|STRA|IND|IP|SCH|RCHAR|GOV|CRC|STAT|OTHER|FIND|FCORP|FOTHER)',	# Deprecated and to be removed soon
+		'type'		=> '(LTD|PLC|PTNR|LLP|STRA|IND|IP|SCH|RCHAR|GOV|CRC|STAT|OTHER|FIND|FCORP|FOTHER)',
+		'reg-opt-out'	=> '(y|n)',			# Deprecated and to be removed soon
+		'opt-out'	=> '(y|Y|n|N)',
+		'reg-co-no'	=> '[0-9]{1,10}',		# Deprecated and to be removed soon
+		'co-no'		=> '[0-9]{1,10}',
+		'reg-addr'	=> '[[:print:]]{1,256}',	# Deprecated and to be removed soon
+		'addr'		=> '[[:print:]]{1,256}',
+		'reg-city'	=> '[[:print:]]{1,80}',		# Deprecated and to be removed soon
+		'city'		=> '[[:print:]]{1,80}',
+		'reg-locality'	=> '[[:print:]]{1,80}',		# Deprecated and to be removed soon
+		'locality'	=> '[[:print:]]{1,80}',
+		'reg-county'	=> '[[:print:]]{1,80}',		# Deprecated and to be removed soon
+		'county'	=> '[[:print:]]{1,80}',
+		'reg-postcode'	=> '[A-Z0-9 ]{1,10}',		# Deprecated and to be removed soon
+		'postcode'	=> '[A-Z0-9 ]{1,10}',
+		'reg-country'	=> '[A-Z]{2}',			# Deprecated and to be removed soon
+		'country'	=> '[A-Z]{2}',
+		'reg-fax'	=> '[\+0-9][0-9\.\-]{1,20}',	# Deprecated and to be removed soon
+		'fax'		=> '[\+0-9][0-9\.\-]{1,20}',
+		'reg-phone'	=> '[\+0-9][0-9\.\-]{1,20}',	# Deprecated and to be removed soon
+		'phone'		=> '[\+0-9][0-9\.\-]{1,20}',
+		'reg-email'	=> '.*',			# Deprecated and to be removed soon
+		'email'		=> 	'.*',
+		'reg-ref'	=> '.*',			# Deprecated and to be removed soon
+		'dns0'		=> '[a-z0-9][a-z0-9\-\.\, ]+',
+		'dns0-id'	=> '[a-z0-9][a-z0-9\-\.\, ]+',
+		'dns1'		=> '[a-z0-9][a-z0-9\-\.\, ]+',
+		'dns1-id'	=> '[a-z0-9][a-z0-9\-\.\, ]+',
+		'dns2'		=> '[a-z0-9][a-z0-9\-\.\, ]+',
+		'dns2-id'	=> '[a-z0-9][a-z0-9\-\.\, ]+',
+		'dns3'		=> '[a-z0-9][a-z0-9\-\.\, ]+',
+		'dns3-id'	=> '[a-z0-9][a-z0-9\-\.\, ]+',
+		'dns4'		=> '[a-z0-9][a-z0-9\-\.\, ]+',
+		'dns4-id'	=> '[a-z0-9][a-z0-9\-\.\, ]+',
+		'dns5'		=> '[a-z0-9][a-z0-9\-\.\, ]+',
+		'dns5-id'	=> '[a-z0-9][a-z0-9\-\.\, ]+',
+		'dns6'		=> '[a-z0-9][a-z0-9\-\.\, ]+',
+		'dns6-id'	=> '[a-z0-9][a-z0-9\-\.\, ]+',
+		'dns7'		=> '[a-z0-9][a-z0-9\-\.\, ]+',
+		'dns7-id'	=> '[a-z0-9][a-z0-9\-\.\, ]+',
+		'dns8'		=> '[a-z0-9][a-z0-9\-\.\, ]+',
+		'dns8-id'	=> '[a-z0-9][a-z0-9\-\.\, ]+',
+		'dns9'		=> '[a-z0-9][a-z0-9\-\.\, ]+',
+		'dns9-id'	=> '[a-z0-9][a-z0-9\-\.\, ]+',
+		'a1-name'	=> '[a-z0-9][a-z0-9\-\.\, ]+',
+		'a1-email'	=> '',
+		'a1-phone'	=> '[\+0-9][0-9\.\-]{1,20}',
+		'a1-fax'	=> '[\+0-9][0-9\.\-]{1,20}',
+		'a2-name'	=> '[a-z0-9][a-z0-9\-\.\, ]+',
+		'a2-email'	=> '',
+		'a2-phone'	=> '[\+0-9][0-9\.\-]{1,20}',
+		'a2-fax'	=> '[\+0-9][0-9\.\-]{1,20}',
+		'a3-name'	=> '[a-z0-9][a-z0-9\-\.\, ]+',
+		'a3-email'	=> '',
+		'a3-phone'	=> '[\+0-9][0-9\.\-]{1,20}',
+		'a3-fax'	=> '[\+0-9][0-9\.\-]{1,20}',
+		'admin-c'	=> '[[:print:]]{1,80}',		# Deprecated - to be removed
+		'a-addr'	=> '[[:print:]]{1,256}',	# Deprecated - to be removed
+		'a-phone'	=> '[\+0-9][0-9\.\-]{1,20}',	# Deprecated - to be removed
+		'a-fax'		=> '[\+0-9][0-9\.\-]{1,20}',	# Deprecated - to be removed
+		'a-email'	=> '.*',			# Deprecated - to be removed
+		'billing-c'	=> '[[:print:]]{1,80}',		# Deprecated - to be removed
+		'b-addr'	=> '[[:print:]]{1,256}',	
+		'b-locality'	=> '[[:print:]]{1,80}',		
+		'b-city'	=> '[[:print:]]{1,80}',
+		'b-county'	=> '[[:print:]]{1,80}',
+		'b-postcode'	=> '[A-Z0-9 ]{1,10}',
+		'b-country'	=> '[A-Z]{2}',
+		'b-phone'	=> '[\+0-9][0-9\.\-]{1,20}',	# Deprecated - to be removed
+		'b-fax'		=> '[\+0-9][0-9\.\-]{1,20}',	# Deprecated - to be removed
+		'b-email'	=> '.*',			# Deprecated - to be removed
+		'b1-name'	=> '[a-z0-9][a-z0-9\-\.\, ]+',
+		'b1-email'	=> '',
+		'b1-phone'	=> '[\+0-9][0-9\.\-]{1,20}',
+		'b1-fax'	=> '[\+0-9][0-9\.\-]{1,20}',
+		'b2-name'	=> '[a-z0-9][a-z0-9\-\.\, ]+',
+		'b2-email'	=> '',
+		'b2-phone'	=> '[\+0-9][0-9\.\-]{1,20}',
+		'b2-fax'	=> '[\+0-9][0-9\.\-]{1,20}',
+		'b3-name'	=> '[a-z0-9][a-z0-9\-\.\, ]+',
+		'b3-email'	=> '',
+		'b3-phone'	=> '[\+0-9][0-9\.\-]{1,20}',
+		'b3-fax'	=> '[\+0-9][0-9\.\-]{1,20}',
+		
+		'ips-key'	=> '[A-Z0-9\-]+',		# Deprecated - to be removed
+		'registrar-tag'	=> '[A-Z0-9\-]+',
+		'first-bill'	=> '(th|bc)',
+		'recur-bill'	=> '(th|bc)',
+		'auto-bill'	=> '[0-9]{0,3}',
+		'next-bill'	=> '[0-9]{0,3}',
+		'notes'		=> '[[:print:]]*',
+		);
+
 our %ukmandatory = (
                    'for' => 1,
                    'reg-contact' => 1,
                    'reg-addr' => 1,
                    'reg-city' => 1,
                    'reg-country' => 1,
-                   );
+                   ); 
                    
-our @ukfields = ('for', 'reg-contact', 'reg-trad-name', 'reg-type', 'reg-co-no', 'reg-locality',
-                 'reg-addr', 'reg-city', 'reg-county', 'reg-country', 'reg-postcode',
-                 'reg-phone', 'reg-fax', 'reg-email', 'reg-ref', 'admin-c', 'a-phone', 
-		 'a-fax', 'a-email', 'a-addr', , 'billing-c', 'b-phone', 'b-fax', 
-		 'b-email', 'b-addr', 'b-locality', 'b-city', 'b-county', 'b-postcode', 
-		 'b-country', 'b-addr', 'ips-key', 'first-bill', 'recur-bill', 'auto-bill', 
-		 'next-bill', 'notes', 'dns0', 'dns1', 'dns2', 'dns3', 'dns4',
-		 'dns5', 'dns6', 'dns7', 'dns8', 'dns9');
+our @ukfields = keys %ukrules;
+#		('for', 'reg-contact', 'reg-trad-name', 'reg-type', 'reg-co-no', 'reg-locality',
+#                 'reg-addr', 'reg-city', 'reg-county', 'reg-country', 'reg-postcode',
+#                 'reg-phone', 'reg-fax', 'reg-email', 'reg-ref', 'admin-c', 'a-phone', 
+#		 'a-fax', 'a-email', 'a-addr', , 'billing-c', 'b-phone', 'b-fax', 
+#		 'b-email', 'b-addr', 'b-locality', 'b-city', 'b-county', 'b-postcode', 
+#		 'b-country', 'b-addr', 'ips-key', 'first-bill', 'recur-bill', 'auto-bill', 
+#		 'next-bill', 'notes', 'dns0', 'dns1', 'dns2', 'dns3', 'dns4',
+#		 'dns5', 'dns6', 'dns7', 'dns8', 'dns9');
 
 our $regtypes = "(ltd|plc|ptnr|stra|llp|ip|ind|sch|rchar|gov|crc|stat|other|find|fcorp|fother)";
-our $emailfields = "(reg-email|a-email|b-email)";
+our $emailfields = "(email|reg-email|a-email|a1-email|a2-email|a3-email|b-email|b1-email|b2-email|b3-email)";
 
 our @ISA = qw(Exporter);
 
@@ -87,7 +142,7 @@ our @ISA = qw(Exporter);
 # our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
 our @EXPORT = qw();
-our $VERSION = '1.05';
+our $VERSION = '1.06';
 
 # Preloaded methods go here.
 
@@ -482,7 +537,7 @@ sub release {
 	use LWP::UserAgent;
 	my $ua = LWP::UserAgent->new(timeout => 20);
 
-	my $response = $ua->get('http://www.nominet.org.uk/tag/becometagholder/taglist/');
+	my $response = $ua->get('http://www.nominet.org.uk/registrars/becomeregistrar/taglist/');
 	if ( $response->is_success ) {
 		$errstr = "$tag is unknown", return if ! $response->content =~ /$tag/im;
 		}

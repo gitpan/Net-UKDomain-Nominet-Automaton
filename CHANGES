@@ -1,5 +1,12 @@
 Revision history for Perl module Net::UKDomain::Nominet::Automaton
 
+1.06	19 July 2007
+	- Add support for new automaton fields
+	- update url checked to verify TAG during release operation
+
+1.05	27 August 2006
+	- Allow space in name server fields for those setting glue details
+
 1.04	9 August 2006
 	- Correct typo on new field reg-ref
 
