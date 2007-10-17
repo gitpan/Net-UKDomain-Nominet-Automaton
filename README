@@ -1,4 +1,4 @@
-Net/UKDomain/Nominet/Automaton version 1.00
+Net/UKDomain/Nominet/Automaton version 1.07
 ===========================================
 
 This perl module provides the functions you need to interface with
@@ -30,11 +30,11 @@ This module requires these other modules and libraries:
   Net::SMTP
   Crypt::OpenPGP
   LWP::UserAgent
-  Mail::CheckUser
 
 COPYRIGHT AND LICENCE
 
-Copyright (C) 2006 Jason Clifford <jason@ukpost.com>
+Copyright (C) 2006,2007 Jason Clifford <jason@ukpost.com>
+			James Wade, perl@jameswade.net
 
 This module is licensed under the terms of the GNU General Public
 License version 2. A copy of the license is included with this

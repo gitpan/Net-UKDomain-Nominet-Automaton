@@ -1,5 +1,14 @@
 Revision history for Perl module Net::UKDomain::Nominet::Automaton
 
+1.07	17 October 2007
+	- Added support for all available operations and fields (and corrected wrong ones)
+	- Module now maps old fields to new
+	- No longer uses Mail::CheckUser module
+	- synopsis corrected (use smtpserver not smtp)
+	- method for calling errstr
+	- cleared up some errors
+	- All above work done by James Wade with a couple of small corrections by Jason
+
 1.06	19 July 2007
 	- Add support for new automaton fields
 	- update url checked to verify TAG during release operation
