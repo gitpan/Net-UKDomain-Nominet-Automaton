@@ -68,6 +68,7 @@ our %rules = (
 		'email'		=> 	$email_match,
 		'phone'		=> '[\+0-9][0-9\.\-]{1,20}',
 		'fax'		=> '[\+0-9][0-9\.\-]{1,20}',
+		'mobile'		=> '[\+0-9][0-9\.\-]{1,20}',
 		'dns'		=> '([a-z0-9][a-z0-9\-\.\, ]+)',
 		'dns-id'	=> '([a-z0-9][a-z0-9\-\.\, ]+)',
 		'dns0'		=> '([a-z0-9][a-z0-9\-\.\, ]+)',
@@ -90,16 +91,19 @@ our %rules = (
 		'dns8-id'	=> '([a-z0-9][a-z0-9\-\.\, ]+)',
 		'dns9'		=> '([a-z0-9][a-z0-9\-\.\, ]+)',
 		'dns9-id'	=> '([a-z0-9][a-z0-9\-\.\, ]+)',
+		'a1-id'	=> '[[:print:]]{1,80}',
 		'a1-name'	=> '([a-z0-9][a-z0-9\-\.\, ]+)',
 		'a1-email'	=> $email_match,
 		'a1-phone'	=> '[\+0-9][0-9\.\-]{1,20}',
 		'a1-fax'	=> '[\+0-9][0-9\.\-]{1,20}',
 		'a1-mobile'	=> '[\+0-9][0-9\.\-]{1,20}',
+		'a2-id'	=> '[[:print:]]{1,80}',
 		'a2-name'	=> '([a-z0-9][a-z0-9\-\.\, ]+)',
 		'a2-email'	=> $email_match,
 		'a2-phone'	=> '[\+0-9][0-9\.\-]{1,20}',
 		'a2-fax'	=> '[\+0-9][0-9\.\-]{1,20}',
 		'a2-mobile'	=> '[\+0-9][0-9\.\-]{1,20}',
+		'a3-id'	=> '[[:print:]]{1,80}',
 		'a3-name'	=> '([a-z0-9][a-z0-9\-\.\, ]+)',
 		'a3-email'	=> $email_match,
 		'a3-phone'	=> '[\+0-9][0-9\.\-]{1,20}',
@@ -168,14 +172,29 @@ our %depreciated = (
 	'b-phone' => 'b1-phone',
 	'b-fax' => 'b1-fax',
 	'b-mobile' => 'b1-mobile',
-	'ips-key' => 'registrar-tag'
+	'ips-key' => 'registrar-tag',
+	'tech-c' => undef,
+	't-addr' => undef,
+	't-phone' => undef,
+	't-fax' => undef,
+	't-email' => undef,
+	'e-mail' => 'email',
+	'fax-no' => 'fax',
+	'address' => 'addr',
+	'org-trad-name' => 'trad-name',
+	'org-type' => 'type',
+	'org-co-no' => 'co-no',
+	'org-postcode' => undef,
+	'org-country' => undef,
+	'org-addr' => undef,
+	'nserver' => 'dns',
 );
 
 ## END variables ##
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw();
-our $VERSION = '1.07';
+our $VERSION = '1.08';
 
 # Preloaded methods go here.
 
@@ -186,7 +205,7 @@ __END__
 
 =head1 NAME
 
-Net::UKDomain::Nominet::Automaton - Module to handle the Nominet Automaton for domain registration and modification.
+Net::UKDomain::Nominet::Automaton - Module to build, encrypt and send requests to the Nominet automation system via email.
 
 =head1 SYNOPSIS
 
@@ -238,15 +257,15 @@ Net::UKDomain::Nominet::Automaton - Module to handle the Nominet Automaton for d
 
 =head1 DESCRIPTION
 
-A simple module for the Nominet .UK email based automaton.
+This module is designed to assist you automate operations used to interface with Nominet, the .UK domain registry.
 
-This is designed to allow you to handle all of the actions normally associated with registering and managing a .UK domain - ie checking that the proposed name is valid and available, registering it or modifying it.
+The Nominet automaton system is an asyncronous process. Requests must be sent via email and replies are also returned via email.
 
-Note that Nominet's Automaton is an asyncronous process. Requests are sent to it via email (using Net::SMTP) and it replies by email to the nofification email address Nominet hold on record for the tag holder.
+The main operations will always return true if the message was sent successfully, otherwise the errstr will be populated.
 
-Be warned that the error strings returned by the module are not intended to be returned directly to users of your script.
+It is recommended you have 'Automaton field options' set to 'Use new field set' via https://secure.nominet.org.uk/tags/manage-options.html
 
-Note: It is recommended you have 'Automaton field options' set to 'Use new field set' via https://secure.nominet.org.uk/tags/manage-options.html
+Further information on the Nominet automation system can be found here: http://www.nominet.org.uk/registrars/systems/auto/
 
 =head1 USAGE
 
@@ -263,41 +282,54 @@ I<%args> can include:
 
 =item KEYID
 
-The PGP or GPG key ID used to sign messages to the Nominet automaton.
+The PGP KeyID to the key used to sign messages to the Nominet automaton system.
+
+(eg: ABC123E4)
 
 =item PASSPHRASE
 
-Your PGP passphrase
+The PGP passphrase you originally used to generate your key.
 
 =item TAG
 
-Your Nominet IPS TAG
+Your Nominet Registrar TAG.
+
+Note: You should be listed here: http://www.nominet.org.uk/registrars/becomeregistrar/taglist/
 
 =item SMTPSERVER
 
-The smtp server through which messages to Nominet's automaton will be sent
+The smtp server through which messages to the Nominet automaton system will be sent.
 
 =item EMAILFROM
 
-The Email address from which messages to Nominet's automaton should be sent.
+The email address from which messages to the Nominet automaton system should be sent.
+
+Note: This email address is usually the same one that you use to log in here: https://secure.nominet.org.uk/
 
 =item SECRING
 
-The location of the secret keyring. This should be the absolute path to the file.
+The full path to the secret keyring file.
+
+eg: /home/user/.gnupg/secring.gpg
 
 =item PUBRING
 
-The location of the public keyring. This should be the absolute path to the file.
+The full path to the public keyring file.
+
+eg: /home/user/.gnupg/pubring.gpg
 
 =item COMPAT
 
-The compatibility mode for Crypt::OpenPGP.
+The compatibility mode for Crypt::OpenPGP (PGP2, PGP5 or GnuPG)
+
+PGP2 is the default, you do not usually need to adjust this.
 
 =item TESTEMAIL
 
-If you provide an email address here the PGP signed emails created
-will be sent to you and B<not> to Nominet. Use this for debuging
-purposes but make sure you remember to remove it on live systems.
+This is used for debugging only. Don't enable this on a live system.
+
+Defining this will mean that all requests will be sent to the defined 
+testemail address instead of to the Nominet automation system.
 
 =back
 
@@ -306,7 +338,7 @@ If I<COMPAT> is not provided it will default to PGP2.
 
 =head1 Net::UKDomain::Nominet::Automaton->valid_domain($domain);
 
-Validates the domain for the .UK name space. 
+Validates the domain for the .uk name space. 
 
 =head1 Net::UKDomain::Nominet::Automaton->domain_available($domain);
 
@@ -316,18 +348,15 @@ Checks whether the domain is available. Returns true if it is.
 
 Sends a message to the Nominet Automaton to register the domain.
 
-The %details hash should contact all the registrant and other
-details for the registration using the standard Nominet Automaton
-field names.
+The %details hash should contain the details that the Nominet
+automation system requires for domain registration to be completed.
 
-The data will be verified for validity.
+All details will be validated.
 
-If the message is sent successfully returns true. Note that this 
-does not confirm that the domain is actually registered. Nominet
-is an asynchronous registry so you need to check your email to
-confirm that the domain is registered. Your system should include
-a means of doing that and holding all the necessary details in 
-some database. 
+Note: A true result does not mean the domain was successfully registered,
+it simply means the request was successfully sent.
+
+See: http://www.nominet.org.uk/registrars/systems/auto/request/
 
 =head1 Net::UKDomain::Nominet::Automaton->modify($domain, $details);
 
@@ -337,28 +366,48 @@ The %details hash should include only the fields you want to
 update. The fields need to be as per the Nominet Automaton 
 standard fields.
 
-=head1 Net::UKDomain::Nominet::Automaton->release($domain, $ipstag);
+See: http://www.nominet.org.uk/registrars/systems/auto/modify/
 
-Releases the domain to the given IPS TAG. 
+=head1 Net::UKDomain::Nominet::Automaton->release($domain, $tag);
+
+Releases the domain to the given registrar TAG. 
 
 This is the means Nominet use to transfer the management of a 
-doamin from one TAG holder to another.
+domain from one member or regisrar to another.
+
+See: http://www.nominet.org.uk/registrars/systems/auto/release/
 
 =head1 Net::UKDomain::Nominet::Automaton->renew($domain);
 
-Renews the domain for the standard 2 year period. 
+Renews the given domain.
+
+See: http://www.nominet.org.uk/registrars/systems/auto/renew/
 
 =head1 Net::UKDomain::Nominet::Automaton->delete($domain);
 
-Deletes the domain. There are limits on the use of this facility.
-See the Nominet website for more details.
+Deletes the given domain.
 
-=head1 Net::UKDomain::Nominet::Automaton->query($domain);
+See: http://www.nominet.org.uk/registrars/systems/auto/delete/
 
-Sends a message to the Automaton requesting a listing of all of the
-details associated with the domain registration. 
+=head1 Net::UKDomain::Nominet::Automaton->query($domain|$details);
 
-The data will be returned by email - it's an asyncronous registry.
+Sends a message to the automaton requesting a listing of all of the
+details associated with the domain or request.
+
+The details will be returned by email.
+
+This method now supports either $domain for regular modification
+or $details to modify accounts, contacts and nameservers.
+
+See: http://www.nominet.org.uk/registrars/systems/auto/query/
+
+=head1 Net::UKDomain::Nominet::Automaton->list($details);
+
+Sends a message to the automaton requesting a list of domains.
+
+The details will be returned by email.
+
+See: http://www.nominet.org.uk/registrars/systems/auto/list/
 
 =head2 EXPORT
 
@@ -397,7 +446,7 @@ sub init {
 	@params=('keyid','passphrase','tag','smtpserver','emailfrom','secring','pubring');
 	foreach my $parami (@params) {
 		if (!defined $self{$parami}) {
-			$errstr = "parameter '$parami' is required";
+			$errstr = "Parameter '$parami' is required";
 			return;
 		}	
 	}
@@ -412,14 +461,20 @@ sub operation {
 	#use Data::Dumper; print Dumper(\$idetails);
 	
 	if (!$idetails) {
-		$errstr = "details are required";
+		$errstr = "Details are required";
 		return;
 	}
 	
 	my $operation = uc($idetails->{'operation'});
 	
 	if ($operation && $operation !~ m/^$operationsi$/i) {
-		$errstr = "unrecognised operation";
+		$errstr = "Unrecognised operation";
+		return;
+	}
+	
+	# Denied operation
+	if ($operation eq 'BULK') {
+		$errstr = "BULK operation is not supported at this time";
 		return;
 	}
 	
@@ -438,13 +493,27 @@ sub operation {
 		return;
 	}
 	if ($operation eq 'MODIFY' && $idetails->{'co-no'} && $idetails->{'key'} =~ m/\.sch\.uk$/i) {
-		$errstr = "The 'co-no' field cannot be modified for an sch.uk domain name";
+		$errstr = "The 'co-no' field cannot be modified for a 'sch.uk' domain name";
 		return;
 	}
 	
 	if ($operation =~ /QUERY|MODIFY/) {
 		if (!($idetails->{'key'} || $idetails->{'dns-id'} || $idetails->{'account-id'} || $idetails->{'contact-id'})) {
-			$errstr = "missing field 'key' or 'dns-id' or 'account-id' or 'contact-id' for operation";
+			$errstr = "Missing field 'key' or 'dns-id' or 'account-id' or 'contact-id' for operation";
+			return;
+		}
+	}
+	
+	if ($operation =~ /LIST/) {
+		if (!($idetails->{'month'} || $idetails->{'expiry'})) {
+			$errstr = "Missing field 'month' or 'expiry' for operation";
+			return;
+		}
+	}
+	
+	if ($operation =~ /RECEIVE/) {
+		if (!($idetails->{'accept'} || $idetails->{'reject'})) {
+			$errstr = "Missing field 'accept' or 'reject' for operation";
 			return;
 		}
 	}
@@ -465,8 +534,8 @@ sub operation {
 	# Check mandatory fields
 	if (!&is_mandatory($idetails)) { return; } # $errstr is set in the subroutine
 
-	# Let's check the tag exists if we specify one
-	if ($idetails->{'registrar-tag'} && !&tag_exists($idetails->{'registrar-tag'})) {
+	# Let's check the tag is valid if we specify one
+	if ($idetails->{'registrar-tag'} && !&valid_tag($idetails->{'registrar-tag'})) {
 		# $errstr will be set in the subroutine
 		return;
 	}
@@ -479,17 +548,18 @@ sub operation {
 	my $sign = &sign($msg);
 	if (!$sign) { return; } # $errstr is set in the subroutine
 	
-	my $to = &send_to($idetails);
-	
 	# This corrects the subject (must appear after $sign is set)
 	if ($operation eq 'QUERY' || $operation eq 'MODIFY') {
 		if ($idetails->{'contact-id'}) { $operation = 'contact '.$operation; }
 		elsif ($idetails->{'dns-id'}) { $operation = 'nameserver '.$operation; }
 		elsif ($idetails->{'account-id'}) { $operation = 'account '.$operation; }
 	}
+	
+	# Ensure operation is correct
+	my $to = &send_to($operation,$idetails);
 
 	my $subject = $self{tag}." ".$operation;
-	
+
 	if (!&send_mail($to, $subject, $sign)) {
 		if (!$errstr) { $errstr = "Unable to send email request"; }
 		return;
@@ -507,7 +577,7 @@ sub is_mandatory {
 	# Operation is always mandatory
 	push(@mandatory,'operation');
 
-	my $key_operations = 'REQUEST|DELETE|RENEW|MODIFY';
+	my $key_operations = 'REQUEST|DELETE|RENEW';
 	# Domain (key) is always mandatory for the above operations
 	if (($operation =~ m/^$key_operations$/i)) {
 			push(@mandatory,'key');
@@ -515,11 +585,11 @@ sub is_mandatory {
 
 	if ($operation eq 'REQUEST') {
 		# If account-id is not supplied, the below fields are also mandatory
-		if (!defined($idetails->{'account-id'})) {
+		if (!$idetails->{'account-id'}) {
 			push(@mandatory,('account-name','addr','country','a1-name','a1-email'));
 		}
 		# If opt-out is supplied, type is also mandatory
-		if (defined($idetails->{'opt-out'})) { push(@mandatory,'type'); }
+		if ($idetails->{'opt-out'}) { push(@mandatory,'type'); }
 	}
 	
 	# registrar-tag is mandatory for release requests only
@@ -529,19 +599,19 @@ sub is_mandatory {
 	if ($operation eq 'RECEIVE') { push(@mandatory,'case-id'); }
 
 	# If a2-name is supplied, a2-email is also mandatory
-	if (defined($idetails->{'a2-name'})) { push(@mandatory,'a2-email'); }
+	if ($idetails->{'a2-name'}) { push(@mandatory,'a2-email'); }
 
 	# If a3-name is supplied, a3-email is also mandatory
-	if (defined($idetails->{'a3-name'})) { push(@mandatory,'a3-email'); }
+	if ($idetails->{'a3-name'}) { push(@mandatory,'a3-email'); }
 
 	# If b1-name is supplied, b1-email is also mandatory
-	if (defined($idetails->{'b1-name'})) { push(@mandatory,'b1-email'); }
+	if ($idetails->{'b1-name'}) { push(@mandatory,'b1-email'); }
 
 	# If b2-name is supplied, b2-email is also mandatory
-	if (defined($idetails->{'b2-name'})) { push(@mandatory,'b2-email'); }
+	if ($idetails->{'b2-name'}) { push(@mandatory,'b2-email'); }
 	
 	# If b3-name is supplied, b3-email is also mandatory
-	if (defined($idetails->{'b3-name'})) { push(@mandatory,'b3-email'); }
+	if ($idetails->{'b3-name'}) { push(@mandatory,'b3-email'); }
 	
 	my $need_postcode = "(GB|JE|GG|IM)"; # See: http://www.iso.org/iso/iso3166_en_code_lists.txt
 	# If country code is in the list, postcode is also mandatory
@@ -559,11 +629,11 @@ sub is_mandatory {
 
 	foreach $field (@mandatory) {
 		if (!defined $idetails->{$field}) {
-			$errstr = "mandatory field '$field' is missing";
+			$errstr = "Mandatory field '$field' is missing";
 			return;
 		}
 		if (!$idetails->{$field}) {
-			$errstr = "mandatory field '$field' is empty";
+			$errstr = "Mandatory field '$field' cannot be empty";
 			return;
 		}
 	}
@@ -586,7 +656,7 @@ sub build_msg {
 				$msg .= "$field: ".$idetails->{$field}.$eol;
 			}
 			else {
-				$errstr = "data in field '$field' is invalid, should match ".$rules{$field};
+				$errstr = "Data in field '$field' is invalid, should match ".$rules{$field};
 				return;
 			}
 		}
@@ -625,39 +695,48 @@ sub sign {
 
 sub send_to {
 	# http://www.nominet.org.uk/registrars/systems/auto/queues/
+	my $operation = shift;
 	my $idetails = shift;
-	if ( defined $self{'testemail'} ) {
-		return $self{'testemail'};
-		}
-	my $operation = uc($idetails->{'operation'});
 	my $to;
 	
-	if ($idetails->{'key'} =~ m/([^.]+\.uk)$/i) { my $sld=lc($1); } # Get the SLD
 	if ($emails{$operation}) { $to = $emails{$operation}; }
-	elsif ($emails_sld{$sld}) { $to = $emails_sld{$sld}; }
+	else {
+		if ($idetails->{'key'} && $idetails->{'key'} =~ m/([^.]+\.uk)$/i) { my $sld=lc($1); } # Get the SLD
+		if ($sld && $emails_sld{$sld}) { $to = $emails_sld{$sld}; }
+	}
 	if (!$to) { $to = 'applications@nic.uk'; }
 	
 	return $to;
 }
 
-sub tag_exists {
-	my $taglist_url='http://www.nominet.org.uk/registrars/becomeregistrar/taglist/';
+sub valid_tag {
+	my $taglist_url = 'http://www.nominet.org.uk/registrars/becomeregistrar/taglist/';
+	my $tag = uc shift;
 	
-	my $tag = shift;
+	if (!$tag) {
+		$errstr = "Registrar TAG is required";
+		return;
+	}
 	
-	# Check that the TAG exists
+	# Check that the TAG is valid
 	use LWP::UserAgent;
 	my $ua = LWP::UserAgent->new(timeout => 30);
+	if (!$ua) {
+		$errstr = "Unable to lookup tag: User Agent is empty.";
+		return;
+	}
 	my $response = $ua->get($taglist_url);
 	if (!$response->is_success) {
 		$errstr = "Unable to lookup tag: ".$response->status_line;
 		return;
 	}
-	if (!$response->content =~ /$tag/im) {
-		$errstr = "The tag '$tag' is unrecognised";
+	if ($response->content =~ /<td>$tag<\/td>/im) {
+		return $tag;
+	}
+	else {
+		$errstr = "The Registrar TAG '$tag' is unrecognised";
 		return;
 	}
-	return $tag;
 }
 
 sub register {
@@ -665,16 +744,18 @@ sub register {
 	my $operation = 'request';
 
 	my $self = shift;
-	my $domain = shift;
+	my $domain;
+	if (@_[1]) { $domain = shift; }
 	my $idetails = shift;
+	if ($domain) { $idetails->{'key'} = $domain; }
 	
 	if (!$domain) {
-		$errstr = "domain is required";
+		$errstr = "Domain is required";
 		return;
 	}
 	
 	if (!$idetails) {
-		$errstr = "details are required";
+		$errstr = "Details are required";
 		return;
 	}
 
@@ -699,7 +780,12 @@ sub modify {
 	if ($domain) { $idetails->{'key'} = $domain; }
     
 	if (!$idetails) {
-		$errstr = "details are required";
+		$errstr = "Details are required";
+		return;
+	}
+	
+	if (ref($idetails) ne 'HASH') {
+		$errstr = "Details must be a hash";
 		return;
 	}
 	
@@ -718,16 +804,24 @@ sub query {
 	my $operation = 'query';
 	
 	my $self = shift;
-	if (@_[1]) { $domain = shift; }
-	my $idetails = shift;
-	if ($domain) { $idetails->{'key'} = $domain; }
+	$idetails = shift;
+	if (ref($idetails) ne 'HASH') {
+		my $domain = $idetails;
+		undef $idetails;
+		my %idetails;
+		$idetails->{'key'} = $domain;
+	}
+	$idetails->{'operation'} = $operation;
 	
 	if (!$idetails) {
-		$errstr = "details are required";
+		$errstr = "Details are required";
 		return;
 	}
 	
-	$idetails->{'operation'} = $operation;
+	if (ref($idetails) ne 'HASH') {
+		$errstr = "Details must be a hash";
+		return;
+	}
 
 	if (!&operation($idetails)) {
 		# $errstr will be set in the subroutine
@@ -742,16 +836,16 @@ sub release {
 	
 	my $self = shift;
 	my $domain = shift;
-	my $tag = shift;
+	my $tag = uc shift;
 	my $idetails;
 
 	if (!$domain) {
-		$errstr = "domain is required";
+		$errstr = "Domain is required";
 		return;
 	}
 	
 	if (!$tag) {
-		$errstr = "registrar-tag is required";
+		$errstr = "Registrar TAG is required";
 		return;
 	}
 
@@ -776,7 +870,7 @@ sub renew {
 	my $domain = shift;
 
 	if (!$domain) {
-		$errstr = "domain is required";
+		$errstr = "Domain is required";
 		return;
 	}
 
@@ -798,7 +892,7 @@ sub delete {
 	my $domain = shift;
     
 	if (!$domain) {
-		$errstr = "domain is required";
+		$errstr = "Domain is required";
 		return;
 	}
 
@@ -820,7 +914,28 @@ sub list {
 	my $idetails = shift;
 	
 	if (!$idetails) {
-		$errstr = "details are required";
+		$errstr = "Details are required";
+		return;
+	}
+	
+	$idetails->{'operation'} = $operation;
+
+	if (!&operation($idetails)) {
+		# $errstr will be set in the subroutine
+		return;
+	}
+	return 1;
+}
+
+sub bulk {
+	# http://www.nominet.org.uk/registrars/systems/auto/bulk/
+	my $operation = 'bulk';
+	
+	my $self = shift;
+	my $idetails = shift;
+	
+	if (!$idetails) {
+		$errstr = "Details are required";
 		return;
 	}
 	
@@ -840,7 +955,7 @@ sub valid_domain {
 	my $domain = lc shift;
 	
 	if (!$domain) {
-		$errstr = "domain is required";
+		$errstr = "Domain is required";
 		return;
 	}
 
@@ -907,30 +1022,28 @@ sub send_mail {
 	}
 
 	if (!$recipient) {
-		$errstr = "recipient is empty";
+		$errstr = "Recipient is empty";
 		return;
 	}
 
 	if (!$subject ) {
-		$errstr = "subject is empty";
+		$errstr = "Subject is empty";
 		return;
 		}
 
 	if (!$message ) {
-		$errstr = "message is empty";
+		$errstr = "Message is empty";
 		return;
 	}
-	
-	# If the user sets the testemail as testemail, we'll skip this part
 
+	# If the user sets the testemail as testemail, we'll skip this part
 	if ($recipient eq 'testemail') { return 1; }
 
 	use Net::SMTP;
 	my $smtp = Net::SMTP->new($self{smtpserver});
     
-	$errstr = "unable to connect to " . $self{smtpserver} . " smtpserver", return if ! $smtp;
-
- 
+	$errstr = "Unable to connect to " . $self{smtpserver} . " smtpserver", return if ! $smtp;
+    
 	return if ! $smtp->mail($self{emailfrom});
 	return if ! $smtp->to($recipient);
     

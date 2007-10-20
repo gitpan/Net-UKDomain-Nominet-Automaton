@@ -74,9 +74,8 @@ $d = Net::UKDomain::Nominet::Automaton->new( keyid     => $keyID,
 if ($d) { ok(6); }
 if ($verbose) { print '$d was populated using Net::UKDomain::Nominet::Automaton->new'."\n"; }
 
-my @rande=(0..9, 'A'..'Z', 'a'..'z')[rand 64, rand 64, rand 64, rand 64, rand 64, rand 64, rand 64, rand 64];
 $domain = 'automaton-test-';
-$domain .= join ('', @rande);
+$domain .= join '', (0..9, 'A'..'Z', 'a'..'z')[rand 64, rand 64, rand 64, rand 64, rand 64, rand 64, rand 64, rand 64];
 $domain .= '.co.uk';
 
 my $valid;
@@ -126,7 +125,7 @@ if ( ! $d->renew($domain) ) {
 }
 else { ok(11); }
 if ($verbose) { print 'renew request issued'."\n"; }
-if ( ! $d->release($domain, 'GEEKY') ) { 
+if ( ! $d->release($domain, 'NOMINET') ) { 
 	print "Cannot release $domain " . $d->errstr() . "\n";
 }
 else { ok(12); }

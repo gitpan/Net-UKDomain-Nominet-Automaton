@@ -1,5 +1,16 @@
 Revision history for Perl module Net::UKDomain::Nominet::Automaton
 
+1.08	20 October 2007
+	- Corrections to previous release as below...
+	- Added more fields that Nominet had failed to mention in the fields documentation, yet appear in other parts
+	- Added more depreciated fields that Nominet depreciated but did not mention in the fields documentation.
+	- Fixed error messages style to be more consistent
+	- Better error checking on fields
+	- Rewritten some of the documentation, in-line with the changes, and to correct some typos
+	- Better passing of variables to the subroutines
+	- Fixed/Improved the Registrar TAG validation
+	- All above work done by James Wade with a couple of small corrections by Jason
+
 1.07	17 October 2007
 	- Added support for all available operations and fields (and corrected wrong ones)
 	- Module now maps old fields to new
